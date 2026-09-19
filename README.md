@@ -1,6 +1,6 @@
 # ESP32C6_GEEK
 
-**GEEK Radar v0.1.0** — kompaktowy dashboard radia/środowiska na **Waveshare ESP32-C6-GEEK**.
+**GEEK Radar v0.1.1** — kompaktowy dashboard radia/środowiska na **Waveshare ESP32-C6-GEEK**.
 
 | | |
 |---|---|
@@ -11,15 +11,19 @@
 | IDE / OS | Cursor + PlatformIO na Linux Mint |
 | USB | native USB-Serial/JTAG → `/dev/ttyACM0` |
 
-Krótki przycisk BOOT: następny ekran. Długi: ponowny skan bieżącej strony.  
+Jeden przycisk BOOT, nawigacja hierarchiczna: krótki = dalej, długi = wejdź / otwórz, bardzo długi = wstecz.  
 Mapa pinów: [docs/HARDWARE.md](docs/HARDWARE.md). Architektura: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Ekrany
 
-1. Splash — GEEK RADAR, status SYSTEM / DISPLAY / RADIO  
-2. Dashboard — uptime, heap, liczby Wi‑Fi/BLE, chip  
-3. Wi‑Fi Radar — bierne odkrywanie sieci (bez łączenia)  
-4. BLE Radar — bierne odkrywanie reklam (bez łączenia)
+1. Splash — GEEK RADAR, status SYSTEM / DISPLAY / RADIO
+2. SYSTEM — uptime, heap, liczby Wi‑Fi/BLE
+3. WIFI — podsumowanie sieci; Long → lista AP → szczegóły
+4. BLE — podsumowanie urządzeń; Long → lista urządzeń → szczegóły reklam
+
+Listy pokazują pozycję `n/total` i jedną wyróżnioną pozycję. Kolejność BLE jest zamrażana przy wejściu (sort RSSI raz); wybór trzyma adres, nie indeks.
+
+Skan jest bierny. Firmware nie łączy się z AP ani urządzeniem BLE.
 
 **TF/SD nie jest używane.** Waveshare V1 i V2 mają inne okablowanie karty — omijamy konflikt.
 
@@ -27,7 +31,7 @@ Mapa pinów: [docs/HARDWARE.md](docs/HARDWARE.md). Architektura: [docs/ARCHITECT
 
 ```
 src/main.cpp          # setup / loop
-src/core/             # App, stan, log
+src/core/             # App, stan, nawigacja, log
 src/config/           # piny i stałe
 src/display/          # LCD + ekrany
 src/input/            # przycisk BOOT
@@ -50,11 +54,11 @@ Szczegóły: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/TROUBLESHOOTING.m
 
 | Plik | Treść |
 |------|--------|
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Moduły, stan, przepływ |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Moduły, stan, nawigacja |
 | [docs/HARDWARE.md](docs/HARDWARE.md) | LCD, BOOT, V1/V2 SD |
-| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | Timing, flagi, lib_deps |
+| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | Timing, pojemności, lib_deps |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Narzędzia, Git |
-| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | dialout, CDC, LCD |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | dialout, CDC, LCD, przycisk |
 | [docs/CHANGELOG.md](docs/CHANGELOG.md) | Istotne zmiany |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Decyzje inżynierskie |
 

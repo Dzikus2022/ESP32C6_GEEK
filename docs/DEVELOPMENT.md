@@ -23,7 +23,9 @@ Serial: prefiksy `[SYSTEM] [DISPLAY] [WIFI] [BLE] [INPUT]`, nie co pętlę.
 - Czytaj kod i szukaj symboli zanim dodasz nowe
 - GPIO tylko w `HardwareConfig.h` + [HARDWARE.md](HARDWARE.md)
 - Skanery nie rysują LCD
-- Jeden `AppState`
+- Jeden `AppState` i jeden `ScreenId`
+- Nawigacja tylko przez `ButtonManager` + `Navigation`
+- Lista BLE: snapshot kolejności, wybór po adresie
 - `main.cpp` cienki
 - Dokumentacja w tym samym zadaniu
 - Nie commituj `.pio/`, binariów, sekretów

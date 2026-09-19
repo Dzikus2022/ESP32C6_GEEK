@@ -40,11 +40,23 @@ Tylko problemy już napotkane przy stawianiu projektu.
 **Przyczyna:** BOOT to GPIO9 active-low; za krótki impuls odpada na debounce 40 ms.  
 **Uwaga:** przytrzymanie BOOT **przy resecie** wchodzi w download mode.
 
+## Long otwiera listę zamiast skanować
+
+To zamierzone. Na WIFI/BLE dashboard Long = wejście w listę. Rescan: Long na SYSTEM albo Long na pustej liście.
+
+## Przytrzymanie na liście przewija, potem wraca
+
+Repeat startuje przy 1100 ms, VeryLong przy 1800 ms. Długie trzymanie na niepustej liście najpierw przewija, potem wraca poziom wyżej. Wstecz bez przewijania: puść przed Repeat albo trzymaj do VeryLong świadomie.
+
 ## Skan Wi‑Fi albo BLE wisi na SCAN
 
 **Objaw:** nagłówek `SCAN` nie znika.  
 **Przyczyna:** kolejka — drugi skan czeka aż pierwszy skończy; timeout Wi‑Fi 8 s, BLE ~3.5 s.  
-**Długi BOOT** na danym ekranie wymusza rescan.
+**Rescan:** Long na SYSTEM albo Long na pustej liście.
+
+## Lista BLE „skacze” na inne urządzenie
+
+Nie powinno. Jeśli tak, wybór nie idzie po adresie albo katalog jest sortowany podczas browse. Snapshot i `selectedKey` są w `Navigation` / `AppState`.
 
 ## Brak tekstu na monitorze USB
 

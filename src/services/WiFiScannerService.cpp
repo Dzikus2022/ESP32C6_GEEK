@@ -53,32 +53,51 @@ void WiFiScannerService::applyResults(AppState* state) {
   const int16_t found = WiFi.scanComplete();
   if (found < 0) {
     state->wifiPhase = ScanPhase::Failed;
-    state->wifiTotal = 0;
-    state->wifiShown = 0;
+    if (!isWifiBrowseScreen(state->screen)) {
+      state->wifiTotal = 0;
+      state->wifiShown = 0;
+    }
     logLine("WIFI", "Scan failed");
     WiFi.scanDelete();
     return;
   }
 
-  state->wifiTotal = static_cast<uint16_t>(found);
-  uint8_t stored = 0;
-  for (int i = 0; i < found && stored < AppConfig::WIFI_STORE_CAP; ++i) {
-    WifiNetwork& row = state->wifi[stored];
-    String ssid = WiFi.SSID(i);
-    if (ssid.length() == 0) {
-      strncpy(row.ssid, "<hidden>", sizeof(row.ssid) - 1);
-    } else {
-      strncpy(row.ssid, ssid.c_str(), sizeof(row.ssid) - 1);
-    }
-    row.ssid[sizeof(row.ssid) - 1] = '\0';
-    row.rssi = static_cast<int8_t>(WiFi.RSSI(i));
-    row.channel = static_cast<uint8_t>(WiFi.channel(i));
-    row.authMode = static_cast<uint8_t>(WiFi.encryptionType(i));
-    ++stored;
+  const bool browsing = isWifiBrowseScreen(state->screen);
+  if (!browsing) {
+    state->wifiShown = 0;
   }
 
-  sortByRssi(state->wifi, stored);
-  state->wifiShown = stored;
+  for (int i = 0; i < found; ++i) {
+    WifiNetwork incoming{};
+    const String ssid = WiFi.SSID(i);
+    if (ssid.length() == 0) {
+      strncpy(incoming.ssid, "<hidden>", sizeof(incoming.ssid) - 1);
+    } else {
+      strncpy(incoming.ssid, ssid.c_str(), sizeof(incoming.ssid) - 1);
+    }
+    incoming.ssid[sizeof(incoming.ssid) - 1] = '\0';
+    incoming.rssi = static_cast<int8_t>(WiFi.RSSI(i));
+    incoming.channel = static_cast<uint8_t>(WiFi.channel(i));
+    incoming.authMode = static_cast<uint8_t>(WiFi.encryptionType(i));
+    const String bssid = WiFi.BSSIDstr(i);
+    if (bssid.length() > 0) {
+      strncpy(incoming.bssid, bssid.c_str(), sizeof(incoming.bssid) - 1);
+    }
+    incoming.bssid[sizeof(incoming.bssid) - 1] = '\0';
+
+    const char* key = incoming.bssid[0] != '\0' ? incoming.bssid : incoming.ssid;
+    const int idx = findWifiIndex(*state, key);
+    if (idx >= 0) {
+      state->wifi[static_cast<uint8_t>(idx)] = incoming;
+    } else if (state->wifiShown < AppConfig::WIFI_STORE_CAP) {
+      state->wifi[state->wifiShown++] = incoming;
+    }
+  }
+
+  if (!browsing) {
+    sortByRssi(state->wifi, state->wifiShown);
+  }
+  state->wifiTotal = state->wifiShown;
   state->wifiPhase = ScanPhase::Complete;
   state->wifiUpdatedMs = millis();
   logLine("WIFI", "Scan completed: %u networks", state->wifiTotal);

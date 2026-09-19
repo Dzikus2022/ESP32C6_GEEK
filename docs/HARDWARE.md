@@ -40,7 +40,7 @@ Native panel w `LCD_Driver.h`: 135×240. Firmware: `init(135, 240, SPI_MODE3)`, 
 |--------|------|--------|
 | BOOT | **9** | `#define PIN_INPUT 9`, `OneButton(..., true)` = active-low |
 
-Firmware: `INPUT_PULLUP`. Przy resetcie przytrzymany BOOT to tryb programowania (strapping) — to sprzęt, nie bug.
+Firmware: `INPUT_PULLUP`. Gestami steruje `ButtonManager` (Short / Long / VeryLong / Repeat) — piny i timing w [CONFIGURATION.md](CONFIGURATION.md). Przy resetcie przytrzymany BOOT to tryb programowania (strapping) — to sprzęt, nie bug.
 
 ## TF / SD — nie używać w v0.1
 

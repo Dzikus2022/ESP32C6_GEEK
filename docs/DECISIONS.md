@@ -42,6 +42,18 @@ TFT_eSPI wymaga `User_Setup.h`. Adafruit przyjmuje piny w konstruktorze, rysuje 
 
 `AppState` jest jeden. Wi‑Fi i BLE nie startują równolegle — współdzielenie radia na C6.
 
+## Hierarchiczna nawigacja jednym przyciskiem
+
+BOOT jest jedynym wejściem. Short/Long/VeryLong/Repeat są sematyką `ButtonManager`, nie timingiem w ekranach. Long na dashboardzie WIFI/BLE **wchodzi** w listę (nie rescan). Rescan zostaje na SYSTEM (Long) oraz na pustej liście (Long).
+
+## Stabilny snapshot listy, nie indeks
+
+Reklamy BLE i RSSI zmieniają się w tle. UI nie sortuje katalogu podczas `BleList`/`BleDetails`. Wybór to adres z `browse.selectedKey`. Dzięki temu użytkownik nie „przeskakuje” na inne urządzenie, gdy RSSI się zmieni.
+
+## Brak auto-connect
+
+Szczegóły są bierne. Long w `BleDetails`/`WifiDetails` nie łączy — nie ma jeszcze bezpiecznej, kompletnej ścieżki połączenia.
+
 ## Dokumentacja bez PROTOCOLS.md
 
 Skan jest lokalny. MQTT/HTTP API nie istnieje — pusty PROTOCOLS.md nie powstaje.
@@ -50,6 +62,4 @@ Skan jest lokalny. MQTT/HTTP API nie istnieje — pusty PROTOCOLS.md nie powstaj
 
 `erase-flash` / `pio run -t erase` nie są częścią workflow. Upload zapisuje aplikację (i w razie potrzeby bootloader/partycje), ale nie czyści całego układu „na wszelki wypadek”.
 
-## Dokumentacja bez PROTOCOLS.md
-
-Na razie nie ma zewnętrznego protokołu (MQTT, HTTP API, komendy sieciowe). Plik pojawi się, gdy taki interfejs powstanie — nie tworzyć pustego szablonu.
+Pusty `PROTOCOLS.md` nie powstaje, dopóki nie będzie MQTT/HTTP API.

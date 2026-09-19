@@ -30,20 +30,37 @@ ButtonEvent ButtonManager::poll() {
   if (rawPressed && !stablePressed_) {
     stablePressed_ = true;
     pressStartMs_ = now;
-    longFired_ = false;
+    veryLongFired_ = false;
+    repeatArmed_ = false;
+    lastRepeatMs_ = now;
     return ButtonEvent::None;
   }
 
-  if (rawPressed && stablePressed_ && !longFired_) {
-    if ((now - pressStartMs_) >= AppConfig::BUTTON_LONG_PRESS_MS) {
-      longFired_ = true;
-      return ButtonEvent::LongPress;
+  if (rawPressed && stablePressed_ && !veryLongFired_) {
+    const uint32_t held = now - pressStartMs_;
+    if (held >= AppConfig::BUTTON_VERY_LONG_PRESS_MS) {
+      veryLongFired_ = true;
+      return ButtonEvent::VeryLongPress;
+    }
+    if (held >= AppConfig::BUTTON_REPEAT_START_MS) {
+      if ((now - lastRepeatMs_) >= AppConfig::BUTTON_REPEAT_INTERVAL_MS) {
+        lastRepeatMs_ = now;
+        repeatArmed_ = true;
+        return ButtonEvent::Repeat;
+      }
     }
   }
 
   if (!rawPressed && stablePressed_) {
     stablePressed_ = false;
-    if (!longFired_ && (now - pressStartMs_) >= AppConfig::BUTTON_DEBOUNCE_MS) {
+    const uint32_t held = now - pressStartMs_;
+    if (veryLongFired_ || repeatArmed_) {
+      return ButtonEvent::None;
+    }
+    if (held >= AppConfig::BUTTON_LONG_PRESS_MS) {
+      return ButtonEvent::LongPress;
+    }
+    if (held >= AppConfig::BUTTON_DEBOUNCE_MS) {
       return ButtonEvent::ShortPress;
     }
   }

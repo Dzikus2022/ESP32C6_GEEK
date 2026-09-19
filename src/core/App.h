@@ -27,7 +27,6 @@ class App {
   PendingScan pendingScan_ = PendingScan::None;
 
   void handleButton(ButtonEvent event);
-  void nextScreen();
   void requestRefresh();
   void serviceScans();
   void maybeAutoScan();

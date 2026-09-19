@@ -5,7 +5,7 @@
 namespace AppConfig {
 
 constexpr const char* APP_NAME = "GEEK RADAR";
-constexpr const char* APP_VERSION = "0.1.0";
+constexpr const char* APP_VERSION = "0.1.1";
 
 constexpr uint32_t SERIAL_BAUD = 115200;
 constexpr uint32_t SERIAL_BOOT_DELAY_MS = 2000;
@@ -13,6 +13,9 @@ constexpr uint32_t SERIAL_HEARTBEAT_MS = 10000;
 
 constexpr uint32_t BUTTON_DEBOUNCE_MS = 40;
 constexpr uint32_t BUTTON_LONG_PRESS_MS = 700;
+constexpr uint32_t BUTTON_REPEAT_START_MS = 1100;
+constexpr uint32_t BUTTON_REPEAT_INTERVAL_MS = 160;
+constexpr uint32_t BUTTON_VERY_LONG_PRESS_MS = 1800;
 
 constexpr uint32_t SPLASH_STEP_MS = 280;
 constexpr uint8_t SPLASH_STEP_COUNT = 5;
@@ -22,9 +25,12 @@ constexpr uint32_t SCAN_STALE_MS = 20000;
 constexpr uint32_t WIFI_SCAN_TIMEOUT_MS = 8000;
 constexpr uint32_t BLE_SCAN_DURATION_MS = 3500;
 
-constexpr uint8_t WIFI_STORE_CAP = 12;
-constexpr uint8_t BLE_STORE_CAP = 12;
-constexpr uint8_t RADAR_ROWS = 5;
+constexpr uint8_t WIFI_STORE_CAP = 24;
+constexpr uint8_t BLE_STORE_CAP = 32;
+constexpr uint8_t BROWSE_CAP = 32;
+constexpr uint8_t RADAR_ROWS = 4;
+constexpr uint8_t BLE_DETAIL_PAGES = 4;
+constexpr uint8_t WIFI_DETAIL_PAGES = 2;
 
 constexpr uint16_t COLOR_BG = 0x0843;
 constexpr uint16_t COLOR_HEADER = 0x02B5;
