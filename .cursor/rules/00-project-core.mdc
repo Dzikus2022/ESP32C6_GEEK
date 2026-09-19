@@ -1,0 +1,632 @@
+---
+description: Core architecture, code quality, reuse and verification rules for ESP32C6_GEEK
+alwaysApply: true
+---
+
+# ESP32C6_GEEK — Core Development Rules
+
+## 1. Read the project before changing it
+
+Before implementing ANY requested feature, bug fix or refactor:
+
+1. Inspect the repository structure.
+2. Read the relevant existing source and header files.
+3. Search the codebase for:
+
+   * existing functions that already perform similar work,
+   * existing classes/modules,
+   * constants,
+   * configuration values,
+   * GPIO definitions,
+   * state variables,
+   * helper functions,
+   * communication handlers,
+   * hardware abstraction code.
+4. Understand the current call flow and data flow.
+5. Identify what existing functionality can be reused.
+
+NEVER immediately write a new implementation just because the user asks for a feature.
+
+First determine whether the project already contains functionality that can be extended or reused.
+
+## 2. Reuse before creating
+
+Do not duplicate logic.
+
+If functionality already exists:
+
+* call it,
+* extend it,
+* generalise it,
+* or refactor it into a reusable function/module.
+
+Do NOT create parallel implementations of the same concept.
+
+Examples:
+
+BAD:
+
+* separate WiFi reconnect logic in three files,
+* separate MQTT publish functions for every feature,
+* several different delay/retry implementations,
+* repeated GPIO control code,
+* duplicate JSON construction,
+* repeated validation logic.
+
+GOOD:
+
+* one reusable WiFi manager,
+* one MQTT publishing abstraction,
+* shared retry helpers,
+* reusable GPIO/hardware drivers,
+* common state model,
+* shared validation functions.
+
+Before creating a new function, ask internally:
+
+"Does a function or module already exist that can do this?"
+
+## 3. Keep main.cpp small
+
+`src/main.cpp` is an application entry point, NOT the entire application.
+
+main.cpp should normally contain only:
+
+* setup,
+* loop,
+* top-level initialization,
+* top-level orchestration.
+
+Business logic, hardware logic and communication logic belong in separate modules.
+
+Target:
+
+* main.cpp preferably below approximately 150 lines.
+
+Do not add large feature implementations directly into main.cpp.
+
+## 4. Modular architecture
+
+Organise functionality by responsibility.
+
+Prefer a structure such as:
+
+```
+src/
+  main.cpp
+  core/
+    App.cpp
+    App.h
+    Config.cpp
+    Config.h
+    State.cpp
+    State.h
+  drivers/
+    ...
+  services/
+    ...
+  network/
+    ...
+  utils/
+    ...
+```
+
+The exact structure may evolve with the project.
+
+Do NOT create directories merely for appearance.
+Create modules when there is a real responsibility to isolate.
+
+Typical separation:
+
+drivers/
+Low-level hardware access.
+
+services/
+Higher-level reusable functionality.
+
+network/
+WiFi, MQTT, HTTP or other communications.
+
+core/
+Application state, configuration and orchestration.
+
+utils/
+Truly generic helpers.
+
+## 5. File size discipline
+
+Avoid giant source files.
+
+Guidelines:
+
+* main.cpp: preferably <150 lines
+* normal implementation file: preferably <300 lines
+* > 400 lines: actively consider refactoring
+* > 600 lines: refactor unless there is a strong technical reason
+* never allow a hand-written application file to casually grow to 1000+ lines
+
+Do not split files artificially just to satisfy a number.
+
+Split according to responsibility and cohesion.
+
+## 6. Single responsibility
+
+Each module should have a clear purpose.
+
+Do not create "god classes" or modules that simultaneously handle:
+
+* hardware,
+* MQTT,
+* WiFi,
+* UI,
+* storage,
+* state,
+* timers,
+* configuration.
+
+If responsibilities become unrelated, separate them.
+
+## 7. Shared application state
+
+Avoid uncontrolled global variables.
+
+Application state should have a clear owner.
+
+Do not create multiple independent variables representing the same physical state.
+
+For example, if a device has an ON/OFF state, there should be one authoritative state representation whenever possible.
+
+State changes should propagate through defined interfaces.
+
+## 8. Hardware definitions
+
+Never guess hardware configuration.
+
+GPIO assignments, I2C addresses, SPI pins, UART pins, voltage assumptions and peripheral configuration must come from:
+
+* confirmed project configuration,
+* confirmed hardware documentation,
+* or explicit user information.
+
+Do not silently change established GPIO assignments.
+
+Centralise hardware pin definitions rather than scattering numeric GPIO values throughout the code.
+
+Avoid magic numbers.
+
+## 9. Configuration
+
+Centralise configurable values.
+
+Examples:
+
+* GPIO numbers,
+* timing values,
+* retry limits,
+* MQTT topics,
+* WiFi configuration,
+* baud rates,
+* device names,
+* thresholds.
+
+Do not duplicate configuration constants across multiple source files.
+
+## 10. Public interfaces
+
+Modules should expose small, clear APIs.
+
+Prefer calls such as:
+
+wifiManager.begin();
+wifiManager.isConnected();
+
+mqttService.publishState();
+
+powerController.setPower(true);
+
+rather than exposing internal implementation details everywhere.
+
+Implementation details should remain private to the module whenever practical.
+
+## 11. Function design
+
+Functions should:
+
+* perform one clear task,
+* have meaningful names,
+* avoid hidden side effects,
+* return useful results where appropriate,
+* validate inputs where necessary.
+
+Avoid very long functions.
+
+When a function becomes difficult to understand without scrolling extensively, consider extracting meaningful operations.
+
+Do not create dozens of tiny meaningless wrapper functions either.
+
+Optimise for readability and maintainability.
+
+## 12. Naming
+
+Use consistent descriptive English names.
+
+Avoid vague names such as:
+
+doStuff()
+handleThing()
+temp2
+flag3
+x1
+
+Prefer names that describe purpose.
+
+Boolean variables should normally read naturally:
+
+isConnected
+powerEnabled
+mqttReady
+restartPending
+
+## 13. Comments
+
+Comments should explain WHY, assumptions, constraints or non-obvious behaviour.
+
+Do not comment obvious syntax.
+
+BAD:
+
+// increment counter
+counter++;
+
+GOOD:
+
+// Keep retries bounded so a disconnected broker cannot block the main loop.
+retryCount++;
+
+Document hardware constraints and important architectural decisions.
+
+## 14. Non-blocking behaviour
+
+This is embedded firmware.
+
+Avoid unnecessary blocking behaviour.
+
+Do not introduce long `delay()` calls into runtime logic unless there is a clear reason.
+
+Prefer timer/state-machine based behaviour using `millis()` or appropriate framework facilities where practical.
+
+Startup-only short delays may be acceptable when technically required.
+
+## 15. Memory awareness
+
+Remember this is an ESP32-C6, not a desktop application.
+
+Avoid unnecessary:
+
+* dynamic allocation,
+* excessive String copying,
+* large temporary buffers,
+* unbounded containers,
+* recursive logic,
+* unnecessary JSON duplication.
+
+Do not prematurely micro-optimise readable code, but consider embedded memory constraints.
+
+## 16. Error handling
+
+Do not silently ignore failures.
+
+Important operations should have defined failure behaviour.
+
+For example:
+
+* WiFi connection failure,
+* MQTT connection failure,
+* invalid sensor data,
+* peripheral initialization failure,
+* malformed messages.
+
+Logging should make failures diagnosable.
+
+## 17. Logging
+
+Use consistent logging.
+
+Do not scatter random `Serial.println()` statements throughout the entire codebase as the project grows.
+
+When the project becomes complex enough, create a common logging abstraction.
+
+Logs should identify the subsystem where practical.
+
+Examples:
+
+[WIFI]
+[MQTT]
+[POWER]
+[SYSTEM]
+
+Never log credentials or secrets.
+
+## 18. Secrets
+
+Never commit:
+
+* WiFi passwords,
+* API tokens,
+* MQTT credentials,
+* private keys,
+* personal secrets.
+
+Use an ignored secrets/config file or another appropriate mechanism.
+
+Check `.gitignore` when introducing secrets.
+
+## 19. Dependency discipline
+
+Do not add a library for trivial functionality that can reasonably be implemented using the existing framework.
+
+Before adding a dependency:
+
+1. check whether existing dependencies already provide the capability,
+2. assess whether the dependency is maintained and appropriate for ESP32-C6,
+3. explain why it is needed.
+
+Do not silently replace existing libraries.
+
+## 20. Preserve working behaviour
+
+Existing working functionality must not be broken while implementing unrelated features.
+
+Before modifying shared code:
+
+* identify its callers,
+* identify side effects,
+* determine what other features depend on it.
+
+When refactoring, preserve externally observable behaviour unless the requested task specifically changes it.
+
+## 21. Analyse impact before editing
+
+Before significant changes, internally determine:
+
+* what files are affected,
+* what modules call the modified code,
+* what state is affected,
+* what initialization order is affected,
+* whether there are concurrency/timing implications,
+* whether hardware behaviour changes,
+* whether MQTT/API/message formats change.
+
+Do not treat a local code edit as isolated if it affects system behaviour.
+
+## 22. Validate logic
+
+Do not consider code correct merely because it compiles.
+
+Check the logical flow.
+
+Specifically inspect for:
+
+* unreachable branches,
+* incorrect state transitions,
+* race-like behaviour,
+* duplicate actions,
+* repeated callbacks,
+* incorrect initialization order,
+* stale state,
+* wrong default state,
+* inverted boolean conditions,
+* timeout errors,
+* retry loops,
+* integer overflow where relevant,
+* inconsistent error recovery.
+
+Trace important control flows mentally before declaring the change complete.
+
+## 23. Build after changes
+
+After modifying C/C++ firmware, run:
+
+pio run
+
+A task is not complete if the project does not compile.
+
+If compilation fails:
+
+* diagnose the real cause,
+* fix the cause rather than masking the error,
+* rebuild.
+
+Do not claim success without a successful build unless building is impossible in the current environment.
+
+## 24. Do not automatically upload firmware
+
+Building and uploading are separate actions.
+
+Do not erase flash.
+
+Do not run:
+
+esptool erase-flash
+
+Do not perform destructive flash operations unless explicitly required and approved.
+
+If an upload is requested, use the configured device/port and report the result.
+
+## 25. Refactor when adding features
+
+Whenever adding a feature, examine whether the existing structure can still support it cleanly.
+
+If adding the new feature would create:
+
+* duplicate code,
+* an oversized file,
+* excessive coupling,
+* another global state variable,
+* another parallel implementation,
+
+refactor first or integrate the feature into the existing abstraction.
+
+Do not continuously append code to the bottom of existing files.
+
+## 26. Prefer extension points
+
+Design reusable modules so future functionality can build on them.
+
+For example:
+
+If several components publish MQTT state, create reusable MQTT publishing infrastructure rather than writing unrelated publishing code for every component.
+
+If several components use timers, use a consistent timing pattern.
+
+If several hardware outputs share behaviour, design a reusable abstraction.
+
+Do not over-engineer hypothetical features, but avoid designs that obviously force duplication on the next feature.
+
+## 27. Search before adding symbols
+
+Before adding:
+
+* a function,
+* class,
+* enum,
+* struct,
+* constant,
+* topic,
+* state variable,
+* configuration value,
+
+search the repository for an equivalent or related symbol.
+
+This is mandatory.
+
+## 28. Check headers and declarations
+
+When changing a module:
+
+* check its header,
+* implementation,
+* callers,
+* initialization,
+* includes.
+
+Keep declarations and definitions synchronized.
+
+Remove obsolete declarations after refactoring.
+
+Do not leave dead code behind.
+
+## 29. Remove obsolete code
+
+After a successful refactor:
+
+* remove superseded implementations,
+* remove unused includes,
+* remove unused variables,
+* remove dead helper functions,
+* remove obsolete comments.
+
+Do not keep old and new implementations "just in case" unless explicitly required.
+
+Git already provides history.
+
+## 30. Backward compatibility
+
+Before changing:
+
+* public module APIs,
+* MQTT topic names,
+* JSON schemas,
+* persisted configuration,
+* external commands,
+
+check whether other code or external systems depend on them.
+
+Do not silently break interfaces.
+
+If an interface must change, clearly identify the compatibility impact.
+
+## 31. No speculative rewrites
+
+Do not rewrite working modules simply because another architecture might look cleaner.
+
+Refactoring must have a concrete benefit:
+
+* removing duplication,
+* fixing a design problem,
+* enabling the requested functionality,
+* improving reliability or maintainability.
+
+Prefer focused changes over unnecessary rewrites.
+
+## 32. Git-aware development
+
+Before substantial edits, inspect the current repository state.
+
+Do not modify generated PlatformIO files in `.pio`.
+
+Do not commit build artifacts.
+
+Keep `.gitignore` correct.
+
+Use meaningful changes that can be reviewed in Git.
+
+Do not automatically commit or push unless the user requests it.
+
+## 33. Before declaring a task complete
+
+Perform a final review.
+
+Check:
+
+1. Does the project build?
+2. Is existing functionality preserved?
+3. Did we duplicate any existing logic?
+4. Could existing functions/modules have been reused instead?
+5. Did we accidentally create multiple sources of truth?
+6. Are hardware values still correct?
+7. Are error paths handled?
+8. Is the code understandable?
+9. Are files becoming too large?
+10. Does the architecture still make sense?
+11. Is there dead code?
+12. Are comments/documentation still accurate?
+13. Does README or project documentation need updating?
+
+Only then report the task as complete.
+
+## 34. Communication with the user
+
+For substantial changes, briefly report:
+
+* what was changed,
+* what existing code was reused,
+* whether any refactoring was performed,
+* whether the build succeeded,
+* any important architectural consequence.
+
+If you discover a structural or logical problem unrelated to the immediate request but likely to cause future bugs, point it out rather than silently ignoring it.
+
+## Core principle
+
+Treat this repository as a long-lived maintainable embedded software project.
+
+Do not optimise for generating the fastest patch.
+
+Optimise for:
+
+correctness,
+reuse,
+clarity,
+modularity,
+maintainability,
+testability,
+hardware safety,
+and future development.
+
+Existing code is the first place to look for a solution.
+
+Do not create what the project already has.
+Do not duplicate what can be reused.
+Do not let files grow indefinitely.
+Do not consider compilation alone proof of correct logic.
