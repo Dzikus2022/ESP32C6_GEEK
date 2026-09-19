@@ -5,7 +5,7 @@
 namespace AppConfig {
 
 constexpr const char* APP_NAME = "GEEK RADAR";
-constexpr const char* APP_VERSION = "0.1.1";
+constexpr const char* APP_VERSION = "0.2.0";
 
 constexpr uint32_t SERIAL_BAUD = 115200;
 constexpr uint32_t SERIAL_BOOT_DELAY_MS = 2000;
@@ -24,11 +24,16 @@ constexpr uint32_t DASHBOARD_REDRAW_MS = 500;
 constexpr uint32_t SCAN_STALE_MS = 20000;
 constexpr uint32_t WIFI_SCAN_TIMEOUT_MS = 8000;
 constexpr uint32_t BLE_SCAN_DURATION_MS = 3500;
+constexpr uint32_t BLE_PROBE_TIMEOUT_MS = 6000;
+
+constexpr uint8_t WIFI_SNIFF_CHANNEL = 6;
+constexpr uint16_t WIFI_SNIFF_MAX_LEN = 256;
+constexpr uint8_t WIFI_SNIFF_QUEUE = 8;
 
 constexpr uint8_t WIFI_STORE_CAP = 24;
 constexpr uint8_t BLE_STORE_CAP = 32;
 constexpr uint8_t BROWSE_CAP = 32;
-constexpr uint8_t RADAR_ROWS = 4;
+constexpr uint8_t RADAR_ROWS = 3;
 constexpr uint8_t BLE_DETAIL_PAGES = 4;
 constexpr uint8_t WIFI_DETAIL_PAGES = 2;
 

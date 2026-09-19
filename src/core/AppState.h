@@ -14,6 +14,7 @@ enum class ScreenId : uint8_t {
   WifiDetails,
   BleList,
   BleDetails,
+  WifiSniffer,
 };
 
 enum class ScanPhase : uint8_t {
@@ -21,6 +22,14 @@ enum class ScanPhase : uint8_t {
   Running,
   Complete,
   Failed,
+};
+
+enum class BleProbePhase : uint8_t {
+  Idle = 0,
+  Connecting,
+  Ok,
+  Refused,
+  Timeout,
 };
 
 struct WifiNetwork {
@@ -39,7 +48,7 @@ constexpr uint8_t BLE_FLAG_HAS_UUID = 1 << 4;
 constexpr uint8_t BLE_FLAG_HAS_SVC_DATA = 1 << 5;
 
 struct BleAdvert {
-  char name[24];
+  char name[32];
   char id[18];
   int8_t rssi;
   int8_t rssiSmooth;
@@ -66,6 +75,20 @@ struct SystemSnapshot {
   uint32_t flashBytes;
   uint32_t heapFree;
   uint32_t uptimeSec;
+};
+
+struct WifiSniffStats {
+  uint8_t channel = AppConfig::WIFI_SNIFF_CHANNEL;
+  uint32_t received = 0;
+  uint32_t streamed = 0;
+  uint32_t dropped = 0;
+  uint32_t mgmt = 0;
+  uint32_t ctrl = 0;
+  uint32_t data = 0;
+  uint16_t pps = 0;
+  int8_t rssi = 0;
+  bool running = false;
+  bool streaming = false;
 };
 
 struct BrowseNav {
@@ -98,6 +121,14 @@ struct AppState {
   uint32_t bleUpdatedMs = 0;
 
   BrowseNav browse{};
+
+  BleProbePhase bleProbe = BleProbePhase::Idle;
+  uint32_t bleProbeAtMs = 0;
+  bool bleBeaconOn = false;
+  bool blePeerOn = false;
+  char blePeerId[18] = {};
+
+  WifiSniffStats wifiSniff{};
 
   bool displayOk = false;
   bool radioReady = false;

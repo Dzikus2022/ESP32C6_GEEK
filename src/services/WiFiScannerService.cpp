@@ -113,7 +113,9 @@ void WiFiScannerService::tick(AppState* state) {
   if (status >= 0 || status == WIFI_SCAN_FAILED) {
     applyResults(state);
     busy_ = false;
-    state->uiDirty = true;
+    if (!isWifiBrowseScreen(state->screen)) {
+      state->uiDirty = true;
+    }
     return;
   }
 

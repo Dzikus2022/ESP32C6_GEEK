@@ -117,6 +117,9 @@ void nextTopLevel(AppState* state) {
       state->screen = ScreenId::MainBle;
       break;
     case ScreenId::MainBle:
+      state->screen = ScreenId::WifiSniffer;
+      break;
+    case ScreenId::WifiSniffer:
     default:
       state->screen = ScreenId::MainSystem;
       break;

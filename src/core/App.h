@@ -6,6 +6,7 @@
 #include "services/BleScannerService.h"
 #include "services/SystemInfoService.h"
 #include "services/WiFiScannerService.h"
+#include "services/WifiSnifferService.h"
 
 class App {
  public:
@@ -20,13 +21,25 @@ class App {
   ButtonManager button_{};
   SystemInfoService systemInfo_{};
   WiFiScannerService wifi_{};
+  WifiSnifferService sniffer_{};
   BleScannerService ble_{};
 
   enum class PendingScan : uint8_t { None, Wifi, Ble, Both };
 
   PendingScan pendingScan_ = PendingScan::None;
+  ScreenId drawnScreen_ = ScreenId::Splash;
+  uint8_t drawnIndex_ = 255;
+  uint8_t drawnPage_ = 255;
+  uint8_t drawnCount_ = 255;
+  bool holdLocked_ = false;
+  bool sawLongThisPress_ = false;
+  bool sawRepeatThisPress_ = false;
+  bool sawVeryLongThisPress_ = false;
 
   void handleButton(ButtonEvent event);
+  void lockHold();
+  void resetHoldFlags();
+  void activateTopLevelHold();
   void requestRefresh();
   void serviceScans();
   void maybeAutoScan();

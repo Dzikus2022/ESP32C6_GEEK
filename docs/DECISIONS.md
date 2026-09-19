@@ -44,15 +44,23 @@ TFT_eSPI wymaga `User_Setup.h`. Adafruit przyjmuje piny w konstruktorze, rysuje 
 
 ## Hierarchiczna nawigacja jednym przyciskiem
 
-BOOT jest jedynym wejściem. Short/Long/VeryLong/Repeat są sematyką `ButtonManager`, nie timingiem w ekranach. Long na dashboardzie WIFI/BLE **wchodzi** w listę (nie rescan). Rescan zostaje na SYSTEM (Long) oraz na pustej liście (Long).
+BOOT jest jedynym wejściem. Short/Long/VeryLong/Repeat/Released są sematyką `ButtonManager`, nie timingiem w ekranach. Long na dashboardzie WIFI/BLE **wchodzi** w listę w 700 ms trzymania (nie na puszczeniu). Reszta gestu jest blokowana, żeby Repeat/VeryLong nie wycofały wejścia. Rescan zostaje na SYSTEM (Long) oraz na pustej liście (Long).
 
 ## Stabilny snapshot listy, nie indeks
 
 Reklamy BLE i RSSI zmieniają się w tle. UI nie sortuje katalogu podczas `BleList`/`BleDetails`. Wybór to adres z `browse.selectedKey`. Dzięki temu użytkownik nie „przeskakuje” na inne urządzenie, gdy RSSI się zmieni.
 
-## Brak auto-connect
+## Sniffer Wi‑Fi jest sondą, nie kartą monitor USB
 
-Szczegóły są bierne. Long w `BleDetails`/`WifiDetails` nie łączy — nie ma jeszcze bezpiecznej, kompletnej ścieżki połączenia.
+C6 nie zastąpi dongle'a monitor-mode. v0.1: stały kanał 6, MPDU do 256 B, PCAP z Radiotap na PC. Firmware w CAPTURE MODE milczy tekstowo, żeby nie zatruć FIFO. Brak deautha i injection.
+
+## Widoczne BLE: telefon łączy się z radarem
+
+Telefon prawie nigdy nie pokazuje UI, gdy to radar puka jako central. Żeby coś było widać na telefonie, radar reklamuje `GEEK RADAR`, a użytkownik łączy się **z aplikacji skanera BLE** (nRF Connect). Ustawienia systemowe iOS zwykle tego nie listują. Bez HID, bez spamu parowania.
+
+## Jedna próba CONNECT, bez floodu
+
+Long w `BleDetails` robi jeden `CONNECT_IND` do wybranego adresu (`setConnectRetries(0)`), pokazuje wynik i rozłącza. Nie ma pętli, retry ani spamu parowania. Pairing PIN jest odrzucany (disconnect). Wi‑Fi nadal bez auto-connect.
 
 ## Dokumentacja bez PROTOCOLS.md
 

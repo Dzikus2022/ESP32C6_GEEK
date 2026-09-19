@@ -3,4 +3,5 @@
 #include "core/AppState.h"
 #include "display/DisplayManager.h"
 
-void drawCurrentScreen(DisplayManager& display, const AppState& state);
+void drawCurrentScreen(DisplayManager& display, const AppState& state,
+                       bool fullClear);

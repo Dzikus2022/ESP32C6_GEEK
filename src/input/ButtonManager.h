@@ -8,6 +8,7 @@ enum class ButtonEvent : uint8_t {
   LongPress,
   VeryLongPress,
   Repeat,
+  Released,
 };
 
 class ButtonManager {
@@ -18,6 +19,7 @@ class ButtonManager {
  private:
   bool lastRaw_ = false;
   bool stablePressed_ = false;
+  bool longFired_ = false;
   bool veryLongFired_ = false;
   bool repeatArmed_ = false;
   uint32_t lastChangeMs_ = 0;

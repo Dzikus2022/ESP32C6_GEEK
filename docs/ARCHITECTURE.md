@@ -1,6 +1,6 @@
 # Architektura
 
-GEEK Radar v0.1.1. Warstwy: **serwisy → `AppState` / modele → nawigacja → Display**. Skanery nie rysują LCD.
+GEEK Radar v0.2.0. Warstwy: **serwisy → `AppState` / modele → nawigacja → Display**. Skanery nie rysują LCD.
 
 ## Drzewo
 
@@ -16,13 +16,15 @@ src/
     Navigation.*           # hierarchia ekranów, snapshot listy
     Log.*                  # [SYSTEM] [DISPLAY] [WIFI] [BLE] [INPUT]
   display/
-    DisplayManager.*       # ST7789, nagłówek, paski RSSI
-    Screens.*              # rysowanie aktualnego ScreenId
+    DisplayManager.*       # ST7789, nagłówek, tekst z tłem, paski RSSI
+    Screens.*              # rysowanie ScreenId (pełne albo live, bez fillScreen)
   input/
-    ButtonManager.*        # Short / Long / VeryLong / Repeat
+    ButtonManager.*        # Short / Long / VeryLong / Repeat / Released
   services/
     SystemInfoService.*
     WiFiScannerService.*   # async WiFi.scanNetworks
+    WifiSnifferService.*   # promiscuous 802.11, kolejka
+    CaptureProtocol.*      # USB GKW1 + CRC32
     BleScannerService.*    # NimBLE advertise scan + merge katalogu
 ```
 
@@ -44,6 +46,7 @@ Właścicielem ekranu jest **jeden** `ScreenId`:
 | `WifiDetails` | szczegóły AP |
 | `BleList` | lista urządzeń |
 | `BleDetails` | szczegóły urządzenia |
+| `WifiSniffer` | monitor 802.11, USB LIVE |
 
 Nie ma osobnych flag typu `inBleList` / `showBleDetails`.
 
@@ -57,10 +60,10 @@ Zdarzenia pochodzą wyłącznie z `ButtonManager`. Ekrany nie mierzą GPIO.
 
 | Zdarzenie | Działanie |
 |-----------|-----------|
-| ShortPress | następny ekran: SYSTEM → WIFI → BLE → SYSTEM |
-| LongPress | na SYSTEM: rescan; na WIFI/BLE: **wejście** w listę |
-| VeryLongPress | brak (już najwyższy poziom) |
-| Repeat | ignorowane |
+| ShortPress | następny ekran: SYSTEM → WIFI → BLE → SNIFFER → SYSTEM |
+| LongPress | w 700 ms trzymania: SYSTEM rescan; WIFI/BLE **wejście** w listę; dalsze zdarzenia tego gestu są blokowane |
+| VeryLongPress | to samo wejście / rescan, gdy Long nie został obsłużony |
+| Repeat | na dashboardzie też wchodzi (zapas); po wejściu ignorowane |
 
 ### Lista (`WifiList` / `BleList`)
 
@@ -68,15 +71,25 @@ Zdarzenia pochodzą wyłącznie z `ButtonManager`. Ekrany nie mierzą GPIO.
 |-----------|-----------|
 | ShortPress | następna pozycja |
 | Repeat | szybkie przewijanie (gdy lista niepusta) |
-| LongPress | otwórz szczegóły wybranej pozycji; pusta lista = rescan |
+| LongPress | zapamiętany; szczegóły po Released, jeśli nie było Repeat; pusta lista = rescan od razu |
 | VeryLongPress | powrót do dashboardu WIFI / BLE |
+
+### WIFI SNIFFER (`WifiSniffer`)
+
+| Zdarzenie | Działanie |
+|-----------|-----------|
+| ShortPress | następny dashboard (SYSTEM) — monitor się wyłącza |
+| LongPress | start/stop **CAPTURE MODE** (binarny USB, bez logów) |
+| VeryLongPress | wstecz do dashboardu WIFI |
+
+Callback Wi‑Fi tylko kopiuje ramkę do kolejki. LCD i USB obsługuje `loop`.
 
 ### Szczegóły (`WifiDetails` / `BleDetails`)
 
 | Zdarzenie | Działanie |
 |-----------|-----------|
 | ShortPress | następna strona informacji |
-| LongPress | brak (nie ma jeszcze bezpiecznej akcji połączenia) |
+| LongPress | tylko `BleDetails`: **jedna** próba CONNECT, potem disconnect; Wi‑Fi Details bez akcji |
 | VeryLongPress | powrót do listy **z tym samym** wybranym urządzeniem/siecią |
 | Repeat | ignorowane |
 
@@ -132,8 +145,12 @@ Stałe tablice, bez nieograniczonego wzrostu:
 
 ## Runtime
 
-`loop` → `App::tick()`: przycisk, splash, `wifi.tick` / `ble.tick`, `resolveBrowseSelection` gdy lista zablokowana, kolejka skanów, rysowanie gdy brudne, heartbeat Serial co 10 s.
+`loop` → `App::tick()`: przycisk, splash, `wifi.tick` / `ble.tick` / `sniffer.tick`, `resolveBrowseSelection` gdy lista zablokowana, kolejka skanów, rysowanie, heartbeat Serial co 10 s (wyłączony w CAPTURE MODE).
+
+Pełne `fillScreen` tylko przy zmianie ekranu / wyboru. RSSI i uptime idą **live** (tekst z tłem), żeby LCD nie skakał.
+
+Lista BLE pokazuje nazwę z reklamy. Gdy nazwy nie ma: appearance (Phone/Watch/…) i/lub vendor z manufacturer ID. MAC jest w szczegółach, nie jako tytuł listy.
 
 ## Świadomie niezaimplementowane
 
-MQTT, HA, web, Zigbee/Thread, TF/SD, łączenie z AP / urządzeniem BLE, narzędzia GPIO/I2C/UART. Wyniki skanu są zwykłymi strukturami — da się je później wystawić bez przepisywania skanerów.
+MQTT, HA, web, Zigbee/Thread, TF/SD, łączenie z AP, hopping kanałów, injection/deauth, deszyfracja WPA. Wyniki skanu i ramek są zwykłymi strukturami — da się je później wystawić bez przepisywania skanerów.

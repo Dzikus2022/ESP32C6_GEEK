@@ -59,7 +59,7 @@ void DisplayManager::fillBackground() {
 void DisplayManager::drawHeader(const char* title, const char* right) {
   gTft.fillRect(0, 0, gTft.width(), 18, AppConfig::COLOR_HEADER);
   gTft.setTextSize(1);
-  gTft.setTextColor(AppConfig::COLOR_TEXT);
+  gTft.setTextColor(AppConfig::COLOR_TEXT, AppConfig::COLOR_HEADER);
   gTft.setCursor(6, 5);
   gTft.print(title != nullptr ? title : "");
   if (right != nullptr && right[0] != '\0') {
@@ -71,8 +71,13 @@ void DisplayManager::drawHeader(const char* title, const char* right) {
 
 void DisplayManager::drawText(int16_t x, int16_t y, const char* text,
                              uint16_t color, uint8_t size) {
+  drawTextOn(x, y, text, color, AppConfig::COLOR_BG, size);
+}
+
+void DisplayManager::drawTextOn(int16_t x, int16_t y, const char* text,
+                               uint16_t fg, uint16_t bg, uint8_t size) {
   gTft.setTextSize(size);
-  gTft.setTextColor(color);
+  gTft.setTextColor(fg, bg);
   gTft.setCursor(x, y);
   gTft.print(text != nullptr ? text : "");
 }

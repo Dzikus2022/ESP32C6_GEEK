@@ -12,11 +12,16 @@
 pio run
 pio run -t upload
 pio device monitor
+python3 -m py_compile tools/geek_sniffer.py
+python3 tools/test_geek_sniffer.py
 ```
+
+Wireshark: [WIRESHARK.md](WIRESHARK.md). `pyserial` w `tools/requirements.txt`.
+Nie włączaj `pio device monitor` gdy leci CAPTURE MODE.
 
 Bez `erase` / `erase-flash`. Upload tylko na prośbę; po zmianie C/C++ obowiązkowe `pio run`.
 
-Serial: prefiksy `[SYSTEM] [DISPLAY] [WIFI] [BLE] [INPUT]`, nie co pętlę.
+Serial: prefiksy `[SYSTEM] [DISPLAY] [WIFI] [BLE] [SNIFF] [INPUT]`, nie co pętlę. W CAPTURE MODE logi aplikacji są wyciszone.
 
 ## Konwencje
 
