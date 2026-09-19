@@ -1,40 +1,38 @@
 # Konfiguracja
 
-Źródło prawdy: `platformio.ini`. Nie ma jeszcze `include/config.h` ani flag funkcyjnych.
+Piny: [HARDWARE.md](HARDWARE.md) / `src/config/HardwareConfig.h`.  
+Timing i UI: `src/config/AppConfig.h`.  
+PlatformIO: `platformio.ini`.
 
-## PlatformIO (`[env:esp32-c6-geek]`)
+## Aplikacja
 
-| Opcja | Wartość | Znaczenie |
-|-------|---------|-----------|
-| `platform` | pioarduino `54.03.20` (URL zip) | Arduino 3.2 na ESP32-C6 |
-| `board` | `esp32-c6-devkitc-1` | kompatybilna definicja C6 QFN40 |
-| `framework` | `arduino` | wymagane przez projekt |
-| `monitor_speed` | `115200` | USB Serial |
-| `upload_port` | `/dev/ttyACM0` | Linux Mint, native USB |
-| `monitor_port` | `/dev/ttyACM0` | j.w. |
-| `board_upload.flash_size` | `16MB` | rozmiar dla esptool |
-| `board_build.flash_size` | `16MB` | rozmiar budowania |
-| `board_build.partitions` | `default_16MB.csv` | tabela 16 MB (Arduino) |
+| Stała | Wartość |
+|-------|---------|
+| Nazwa | GEEK RADAR |
+| Wersja | 0.1.0 |
+| Serial | 115200, start ~2 s, heartbeat 10 s |
+| Debounce BOOT | 40 ms |
+| Długi przycisk | 700 ms |
+| Krok splash | 280 ms |
+| Odświeżenie dashboardu | 500 ms |
+| Skan „stary” | 20 s |
+| Timeout Wi‑Fi | 8 s |
+| Czas BLE | 3.5 s |
+| Wyników w pamięci | 12 Wi‑Fi / 12 BLE |
+| Wierszy na radarze | 5 |
 
-## Flag kompilacji
+Brak haseł Wi‑Fi, tokenów i MQTT. Skan jest bierny.
 
-| Flaga | Po co |
-|-------|--------|
-| `ARDUINO_USB_MODE=1` | native USB (Hardware CDC / JTAG) |
-| `ARDUINO_USB_CDC_ON_BOOT=1` | `Serial.println()` po USB CDC od startu |
+## PlatformIO
 
-To nie są przypisania GPIO peryferiów.
+Bez zmian względem poprzedniego env: pioarduino 54.03.20, `esp32-c6-devkitc-1`, Arduino, `/dev/ttyACM0`, 16 MB, `default_16MB.csv`, USB CDC.
 
-## Timing w firmware (na razie w `src/main.cpp`)
+Nowe `lib_deps`:
 
-| Zachowanie | Wartość | Uwaga |
-|------------|---------|--------|
-| Baud Serial | 115200 | zgodne z `monitor_speed` |
-| Opóźnienie po `Serial.begin` | ~2000 ms | tylko start |
-| Okres komunikatu alive | ~1000 ms | `delay()` w `loop()` — tymczasowe, do wymiany gdy pojawi się logika runtime |
+- `adafruit/Adafruit GFX Library`
+- `adafruit/Adafruit ST7735 and ST7789 Library`
+- `h2zero/NimBLE-Arduino`
 
-## Sieć / MQTT / sekrety
+`lib_ignore`: `SD`, `Adafruit seesaw Library` (transytywne; TF wyłączone).
 
-Brak. Projekt nie ma Wi‑Fi, MQTT ani tokenów.
-
-`.gitignore` już ignoruje przyszłe `include/config.h` oraz `.env`. **Nie commituj** haseł, tokenów ani kluczy. Nie wklejaj ich do dokumentacji.
+Flagi USB bez zmian: `ARDUINO_USB_MODE=1`, `ARDUINO_USB_CDC_ON_BOOT=1`.

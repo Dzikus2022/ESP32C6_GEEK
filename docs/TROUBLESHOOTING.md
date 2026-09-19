@@ -28,6 +28,24 @@ Tylko problemy już napotkane przy stawianiu projektu.
 **Przyczyna:** tekst z JSON-a `esp32-c6-devkitc-1` (referencyjny DevKit).  
 **Fakt:** fizyczny flash GEEK to 16 MB; projekt używa `default_16MB.csv` (slot aplikacji 6 553 600 B). To nie jest powód do kasowania flasha ani zmiany tabeli bez analizy.
 
+## LCD czarny / śmieci
+
+**Objaw:** brak splash albo zły obraz.  
+**Sprawdź:** piny jak w [HARDWARE.md](HARDWARE.md), `SPI_MODE3`, podświetlenie GPIO6.  
+**Nie mieszaj** pinów z nieoficjalnych opisów innych rewizji.
+
+## Przycisk nie zmienia ekranu
+
+**Objaw:** dashboard stoi.  
+**Przyczyna:** BOOT to GPIO9 active-low; za krótki impuls odpada na debounce 40 ms.  
+**Uwaga:** przytrzymanie BOOT **przy resecie** wchodzi w download mode.
+
+## Skan Wi‑Fi albo BLE wisi na SCAN
+
+**Objaw:** nagłówek `SCAN` nie znika.  
+**Przyczyna:** kolejka — drugi skan czeka aż pierwszy skończy; timeout Wi‑Fi 8 s, BLE ~3.5 s.  
+**Długi BOOT** na danym ekranie wymusza rescan.
+
 ## Brak tekstu na monitorze USB
 
 **Objaw:** upload OK, monitor pusty.  

@@ -2,6 +2,14 @@
 
 Bez numerów wersji, dopóki projekt nie wprowadzi formalnego versioningu. Najnowsze wpisy na górze.
 
+## 2026-09-19 — GEEK Radar v0.1.0
+
+- Dashboard LCD: splash, system, Wi‑Fi radar, BLE radar.
+- BOOT: krótki = strona, długi = skan (debounce).
+- Architektura: serwisy → `AppState` → UI; `main.cpp` tylko entry point.
+- Piny LCD/BOOT z oficjalnych dem Waveshare V1/V2. TF/SD celowo pominięte.
+- Zależności: Adafruit GFX/ST7789, NimBLE-Arduino. USB Serial zachowany.
+
 ## 2026-09-19
 
 - Dodane stałe reguły dokumentacji w `.cursor/rules/00-project-core.mdc`.

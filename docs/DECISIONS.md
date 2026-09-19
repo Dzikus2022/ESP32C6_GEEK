@@ -22,9 +22,29 @@ Fizyczny NOR to 16 MB. Tabela `default_16MB.csv` jest standardową tabelą Ardui
 
 Płytka używa native USB-Serial/JTAG, nie mostka UART. Bez `ARDUINO_USB_MODE=1` i `ARDUINO_USB_CDC_ON_BOOT=1` `Serial.println()` nie wychodzi na `/dev/ttyACM0`. To konfiguracja USB, nie mapa GPIO.
 
-## Brak mapy GPIO w kodzie i dokumentacji
+## LCD i BOOT z oficjalnych dem Waveshare
 
-Pinout LCD / TF / I2C / UART / przycisków **nie jest potwierdzony** w repo. Zgadywanie pinów jest zabronione. Tabela GPIO powstanie tylko w [HARDWARE.md](HARDWARE.md), gdy będzie źródło.
+Piny LCD (GPIO 1/2/3/4/5/6) i BOOT (GPIO 9, active-low) pochodzą z `DEV_Config` oraz `05_LCD_Button` w repozytorium Waveshare — **identyczne dla V1 i V2**. Nie kopiować pinów z nieoficjalnych list (HA / „silent refresh”).
+
+## Brak TF/SD w v0.1
+
+V2 zmienia okablowanie karty. Implementacja SD bez potwierdzonej rewizji płytki grozi konfliktem V1/V2. `lib_ignore` dla `SD`.
+
+## NimBLE zamiast Bluedroid
+
+Arduino 3.x ma BLE w rdzeniu (ciężki stos). NimBLE-Arduino oficjalnie wspiera ESP32-C6, zajmuje mniej RAM i skanuje same reklamy. Nie łączymy się z urządzeniami.
+
+## Adafruit ST7789 zamiast TFT_eSPI
+
+TFT_eSPI wymaga `User_Setup.h`. Adafruit przyjmuje piny w konstruktorze, rysuje bez pełnego framebuffera (240×135×2 ≈ 63 KB oszczędzone). Waveshare: `SPI_MODE3`.
+
+## Jeden właściciel stanu i kolejka radia
+
+`AppState` jest jeden. Wi‑Fi i BLE nie startują równolegle — współdzielenie radia na C6.
+
+## Dokumentacja bez PROTOCOLS.md
+
+Skan jest lokalny. MQTT/HTTP API nie istnieje — pusty PROTOCOLS.md nie powstaje.
 
 ## Brak kasowania flasha
 

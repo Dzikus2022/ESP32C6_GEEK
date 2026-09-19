@@ -1,40 +1,58 @@
 # Architektura
 
-Dokument opisuje **aktualne** drzewo źródeł. Nie ma jeszcze warstw `core/`, `drivers/`, `services/` ani `network/` — powstaną, gdy pojawi się rzeczywista odpowiedzialność do wydzielenia.
+GEEK Radar v0.1. Warstwy: **serwisy → `AppState` → UI**. Skanery nie rysują LCD.
 
-## Stan obecny
-
-Firmware to test USB Serial na ESP32-C6-GEEK. Jedyny kod aplikacji:
+## Drzewo
 
 ```
 src/
-  main.cpp
+  main.cpp                 # setup / loop
+  config/
+    HardwareConfig.h       # potwierdzone GPIO
+    AppConfig.h            # wersja, timing, kolory
+  core/
+    App.*                  # orchestracja
+    AppState.h             # jedyny model stanu
+    Log.*                  # [SYSTEM] [DISPLAY] [WIFI] [BLE] [INPUT]
+  display/
+    DisplayManager.*       # ST7789, nagłówek, paski RSSI
+    Screens.*              # splash / dashboard / wifi / ble
+  input/
+    ButtonManager.*        # debounce, krótki / długi BOOT
+  services/
+    SystemInfoService.*
+    WiFiScannerService.*   # async WiFi.scanNetworks
+    BleScannerService.*    # NimBLE advertise scan
 ```
 
-`src/main.cpp` jest punktem wejścia Arduino (`setup` / `loop`). Na tym etapie cała logika testu mieści się tam (poniżej limitu ~150 linii).
+`main.cpp` zostaje entry pointem (~11 linii).
 
-Nie ma jeszcze:
+## Właściciel stanu
 
-- menedżera Wi‑Fi,
-- MQTT / HTTP,
-- sterowników GPIO / LCD / TF,
-- wspólnego modelu stanu,
-- warstwy konfiguracji runtime.
+`App` trzyma jeden `AppState`. Serwisy zapisują wyniki skanu i fazę. Display tylko czyta.
 
-## Przepływ
+Pola m.in.: `screen`, snapshot systemu, `wifiPhase` / wyniki / timestamp, `blePhase` / wyniki / timestamp, flagi splash i `uiDirty`.
 
-1. **Boot** — Arduino wywołuje `setup()`.
-2. **`setup()`** — `Serial.begin(115200)`, stałe opóźnienie startowe ~2 s (akceptowalne tylko przy starcie), wypisanie potwierdzenia i informacji o chipie (`ESP.getChipModel()`, rewizja, częstotliwość CPU, rozmiar flash, wersja SDK).
-3. **`loop()`** — co ~1 s wypisuje `ESP32-C6-GEEK alive`.
+Wi‑Fi i BLE **nie skanują jednocześnie** — kolejka `PendingScan` (radio C6).
 
-Stan aplikacji: brak. Nie ma zmiennych globalnych reprezentujących sprzęt.
+## Inicjalizacja
 
-Serial idzie przez native USB CDC (flagi w `platformio.ini`). Szczegóły: [CONFIGURATION.md](CONFIGURATION.md), [HARDWARE.md](HARDWARE.md).
+1. USB Serial 115200 + ~2 s (start)  
+2. snapshot systemu  
+3. LCD + podświetlenie  
+4. BOOT INPUT_PULLUP  
+5. Wi‑Fi STA, bez łączenia  
+6. NimBLE init  
+7. splash (maszyna `millis`, bez długich `delay`)  
+8. dashboard + kolejka skanu Wi‑Fi, potem BLE  
 
-## Zależności między modułami
+## Runtime
 
-Brak. Jedyny include aplikacji to `<Arduino.h>`.
+`loop` → `App::tick()`: przycisk, splash, `wifi.tick` / `ble.tick`, kolejka skanów, rysowanie gdy brudne, heartbeat Serial co 10 s.
 
-## Kierunek (niezaimplementowane)
+Krótki BOOT: Dashboard → Wi‑Fi → BLE → Dashboard.  
+Długi BOOT: rescan bieżącej strony (na dashboardzie: oba, sekwencyjnie).
 
-Gdy pojawią się kolejne funkcje, logika biznesowa i sprzętowa ma wyjść z `main.cpp` do osobnych modułów. `main.cpp` zostaje orchestracją. Zasady: `.cursor/rules/00-project-core.mdc`.
+## Świadomie niezaimplementowane
+
+MQTT, HA, web, Zigbee/Thread, TF/SD, tryb połączenia Wi‑Fi, narzędzia GPIO/I2C/UART. Wyniki skanu są zwykłymi strukturami — da się je później wystawić bez przepisywania skanerów.
