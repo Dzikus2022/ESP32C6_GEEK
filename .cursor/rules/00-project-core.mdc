@@ -630,3 +630,379 @@ Do not create what the project already has.
 Do not duplicate what can be reused.
 Do not let files grow indefinitely.
 Do not consider compilation alone proof of correct logic.
+
+# Documentation is part of the implementation
+
+Documentation MUST stay synchronized with the codebase.
+
+A code change is NOT considered complete if it makes any existing documentation inaccurate, incomplete or misleading.
+
+Whenever anything changes in the project, review whether documentation must also change.
+
+This applies to:
+
+* architecture,
+* modules,
+* public APIs,
+* functions intended for reuse,
+* hardware,
+* GPIO assignments,
+* I2C/SPI/UART configuration,
+* devices and peripherals,
+* WiFi behaviour,
+* MQTT behaviour,
+* MQTT topics,
+* JSON payloads,
+* commands,
+* state handling,
+* configuration,
+* timing behaviour,
+* boot behaviour,
+* recovery behaviour,
+* dependencies,
+* PlatformIO configuration,
+* build procedure,
+* upload procedure,
+* development environment,
+* directory structure,
+* external integrations,
+* known limitations,
+* troubleshooting,
+* setup instructions.
+
+## Documentation review is mandatory
+
+After EVERY meaningful implementation or refactor, inspect the documentation before declaring the task complete.
+
+Do not wait for the user to explicitly ask for documentation updates.
+
+Determine automatically which documentation is affected.
+
+If documentation is affected, update it as part of the SAME task.
+
+Code and corresponding documentation should normally be committed together.
+
+## Documentation must describe the current project
+
+Documentation must describe the CURRENT implementation.
+
+Never leave documentation describing:
+
+* old GPIO assignments,
+* deleted functions,
+* obsolete architecture,
+* old MQTT topics,
+* removed configuration,
+* superseded commands,
+* old directory structure,
+* unsupported hardware,
+* previous behaviour.
+
+Git history preserves old versions.
+
+Current documentation should document the current project.
+
+## Required documentation structure
+
+Maintain the following documentation where applicable:
+
+README.md
+
+docs/
+ARCHITECTURE.md
+HARDWARE.md
+CONFIGURATION.md
+DEVELOPMENT.md
+PROTOCOLS.md
+TROUBLESHOOTING.md
+CHANGELOG.md
+DECISIONS.md
+
+Do not create meaningless empty documentation.
+
+Create a document when the project contains enough relevant information for it to be useful.
+
+## README.md
+
+README.md is the project entry point.
+
+Keep it concise but current.
+
+It should contain or link to:
+
+* what ESP32C6_GEEK is,
+* supported hardware,
+* ESP32 variant,
+* flash size,
+* framework,
+* PlatformIO,
+* Linux development environment,
+* repository structure,
+* build instructions,
+* upload instructions,
+* serial monitor instructions,
+* links to detailed documentation.
+
+Do not turn README.md into a giant technical specification.
+
+Detailed information belongs in docs/.
+
+## ARCHITECTURE.md
+
+Maintain:
+
+docs/ARCHITECTURE.md
+
+Document:
+
+* high-level software architecture,
+* module responsibilities,
+* important dependencies between modules,
+* initialization sequence,
+* important runtime flows,
+* state ownership,
+* service relationships.
+
+When modules are created, removed, renamed or their responsibilities change, update this document.
+
+Architecture documentation must correspond to the actual source tree.
+
+## HARDWARE.md
+
+Maintain:
+
+docs/HARDWARE.md
+
+Document confirmed hardware information only.
+
+Include where applicable:
+
+* ESP32 model,
+* board revision,
+* flash size,
+* GPIO assignments,
+* buses,
+* UART,
+* I2C,
+* SPI,
+* connected peripherals,
+* voltage requirements,
+* power assumptions,
+* hardware limitations.
+
+NEVER document guessed GPIO assignments or unverified hardware facts.
+
+Mark information as unconfirmed when necessary.
+
+Whenever hardware assignments change, HARDWARE.md must be updated in the same task.
+
+## CONFIGURATION.md
+
+Maintain:
+
+docs/CONFIGURATION.md
+
+Document configurable behaviour including:
+
+* compile-time configuration,
+* configuration files,
+* feature flags,
+* timings,
+* retry limits,
+* network settings,
+* device settings,
+* secrets handling,
+* relevant PlatformIO options.
+
+Never put real passwords, tokens or secrets into documentation.
+
+## DEVELOPMENT.md
+
+Maintain:
+
+docs/DEVELOPMENT.md
+
+Document:
+
+* required development tools,
+* Cursor,
+* PlatformIO,
+* Arduino framework,
+* build commands,
+* upload commands,
+* serial monitor commands,
+* development workflow,
+* Git workflow where appropriate,
+* project conventions.
+
+If the development process changes, update DEVELOPMENT.md.
+
+## PROTOCOLS.md
+
+When network communication or external APIs exist, maintain:
+
+docs/PROTOCOLS.md
+
+Document:
+
+* MQTT topics,
+* message direction,
+* payload format,
+* JSON fields,
+* retained/non-retained behaviour,
+* commands,
+* state messages,
+* error behaviour,
+* compatibility requirements.
+
+Whenever a topic, command, JSON schema or protocol changes, update PROTOCOLS.md in the SAME task.
+
+Never silently change a documented protocol.
+
+## TROUBLESHOOTING.md
+
+Maintain:
+
+docs/TROUBLESHOOTING.md
+
+When a meaningful problem is discovered and solved, consider documenting:
+
+* symptom,
+* likely cause,
+* diagnostic command,
+* solution,
+* relevant constraints.
+
+Do not fill this file with trivial compiler mistakes.
+
+Document issues that are realistically useful in future development or deployment.
+
+## CHANGELOG.md
+
+Maintain:
+
+docs/CHANGELOG.md
+
+Record meaningful project changes.
+
+Do not record every whitespace or internal cosmetic change.
+
+Record things such as:
+
+* new features,
+* hardware changes,
+* architecture changes,
+* protocol changes,
+* important fixes,
+* configuration changes,
+* breaking changes.
+
+Use clear chronological entries.
+
+Do not invent release versions unless the project starts using formal versioning.
+
+## DECISIONS.md
+
+Maintain:
+
+docs/DECISIONS.md
+
+Record important engineering decisions that would otherwise be difficult to understand later.
+
+Examples:
+
+* why a particular architecture was selected,
+* why a specific library is used,
+* why a certain GPIO is reserved,
+* why state is owned by a particular module,
+* why a protocol format was chosen,
+* why a previous implementation was replaced.
+
+Do not record trivial implementation choices.
+
+The purpose is to prevent future developers or AI agents from undoing intentional architectural decisions because they do not understand the reason behind them.
+
+## Documentation references
+
+When possible, avoid duplicating the same detailed information in multiple documents.
+
+Prefer one authoritative source and link to it from other documents.
+
+Example:
+
+GPIO mapping should primarily live in HARDWARE.md.
+
+README.md should link to HARDWARE.md rather than maintaining a second independent GPIO table.
+
+This prevents documentation from becoming inconsistent.
+
+## Source code and documentation must agree
+
+If there is disagreement between implementation and documentation:
+
+1. investigate which represents the intended current design,
+2. resolve the inconsistency,
+3. do not silently assume either one is correct.
+
+If the discrepancy could affect hardware safety or compatibility, report it before making assumptions.
+
+## Documentation-aware refactoring
+
+When refactoring:
+
+* search documentation for references to renamed symbols,
+* search for old paths,
+* search for removed modules,
+* search for old commands,
+* search for old protocols,
+* search for old configuration names.
+
+Update all affected references.
+
+## Documentation verification before completion
+
+Before declaring ANY substantial task complete, check:
+
+1. Does README.md still describe the project correctly?
+2. Does ARCHITECTURE.md match the actual modules?
+3. Does HARDWARE.md match confirmed hardware?
+4. Does CONFIGURATION.md match actual configuration?
+5. Does DEVELOPMENT.md contain current commands?
+6. Does PROTOCOLS.md match actual external interfaces?
+7. Does TROUBLESHOOTING.md need a useful new entry?
+8. Does CHANGELOG.md need an entry?
+9. Does DECISIONS.md need to record an architectural decision?
+10. Are there obsolete references anywhere in docs/?
+
+Documentation review is part of the definition of done.
+
+## Definition of Done
+
+For any meaningful change, the task is complete only when:
+
+* implementation is complete,
+* code has been reviewed logically,
+* existing functionality has been considered,
+* duplicate logic has been avoided,
+* the project builds successfully,
+* affected documentation has been updated,
+* documentation matches the actual implementation,
+* obsolete documentation has been removed or corrected.
+
+A successful compilation alone does NOT make a task complete.
+
+# Documentation principle
+
+Treat documentation as a first-class project artifact.
+
+If behaviour changes, documentation changes.
+
+If hardware changes, documentation changes.
+
+If architecture changes, documentation changes.
+
+If configuration changes, documentation changes.
+
+If external interfaces change, documentation changes.
+
+Do not allow documentation debt to accumulate.
