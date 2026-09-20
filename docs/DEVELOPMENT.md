@@ -13,6 +13,7 @@ pio run
 pio run -t upload
 pio device monitor
 python3 -m py_compile tools/geek_sniffer.py
+python3 tools/geek_sniffer.py --self-test
 python3 tools/test_geek_sniffer.py
 ```
 

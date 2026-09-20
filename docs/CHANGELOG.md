@@ -2,6 +2,16 @@
 
 Bez numerów wersji, dopóki projekt nie wprowadzi formalnego versioningu. Najnowsze wpisy na górze.
 
+## 2026-09-20 — Radiotap Flags: FCS na końcu ramki
+
+- `sig_len` z ESP32 zawiera 4-bajtowy FCS. Wireshark bez flagi Flags/FCS czytał go jako IE → Beacon *Malformed Packet*.
+- Mostek zachowuje FCS i ustawia `IEEE80211_RADIOTAP_F_FCS`. Firmware bez zmian.
+
+## 2026-09-20 — FIFO PCAP: nagłówek przy każdej sesji
+
+- Mostek pisał global header PCAP tylko przy pierwszym czytelniku FIFO. Kolejny Wireshark widział `ts_sec` jako magię (`0x00000128`).
+- Teraz każdy reader dostaje `d4 c3 b2 a1` + DLT 127 zanim padnie pierwszy rekord. `--self-test` to sprawdza.
+
 ## 2026-09-20 — GEEK WiFi Sniffer v0.1 (firmware 0.2.0)
 
 - Promiscuous 802.11 na stałym kanale 6, kolejka, USB binary `GKW1`.

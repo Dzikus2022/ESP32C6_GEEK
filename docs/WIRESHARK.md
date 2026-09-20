@@ -49,11 +49,22 @@ Opcje: `--baud 115200`, `--output capture.pcap`.
 
 FIFO `/tmp/geek-wifi` powstaje sam. Diagnostyka idzie na **stderr**.
 
+Każdy nowy czytelnik FIFO dostaje **świeży** 24-bajtowy nagłówek PCAP (`d4 c3 b2 a1`). Jeśli Wireshark się zamknie, mostek czeka i przy kolejnym otwarciu znowu pisze nagłówek — nie kontynuuje w połowie strumienia.
+
+Tylko **jeden** czytelnik FIFO naraz. Stary `dd` / drugi mostek / drugi Wireshark psuje magię.
+
 ```bash
 wireshark -k -i /tmp/geek-wifi
 ```
 
-Najpierw mostek (czeka na readera FIFO), potem Wireshark. Albo odwrotnie — `mkfifo` już jest.
+Najpierw mostek (czeka na readera FIFO), potem Wireshark.
+
+Self-test nagłówka (bez płytki):
+
+```bash
+python3 tools/geek_sniffer.py --self-test
+python3 tools/test_geek_sniffer.py
+```
 
 Link type: **127** `LINKTYPE_IEEE802_11_RADIOTAP`.
 Oczekiwany stos: Radiotap → IEEE 802.11 (Beacon, Probe, Control, Data).
@@ -75,7 +86,9 @@ Oczekiwany stos: Radiotap → IEEE 802.11 (Beacon, Probe, Control, Data).
 
 Parser szuka MAGIC, sprawdza długości i CRC, po śmieciach resynchronizuje się od następnego MAGIC. Granice `read()` ≠ granice ramek.
 
-Radiotap jest minimalny: **Channel** (MHz + flaga 2 GHz) i **dBm Antsignal**. Bez noise/MCS/rate.
+Radiotap jest minimalny: **Flags**, **Channel** (MHz + flaga 2 GHz) i **dBm Antsignal**. Bez noise/MCS/rate.
+
+ESP32-C6 `sig_len` obejmuje 4-bajtowy FCS. Mostek **zostawia** te 4 bajty i ustawia `IEEE80211_RADIOTAP_F_FCS` (`0x10`) w Flags, gdy `CAPTURE_LENGTH == ORIGINAL_LENGTH`. Przy obcięciu do 256 B flagi FCS nie ma — ostatnie bajty nie są FCS. Bez tej flagi Wireshark traktuje FCS jako IE i oznacza Beacon jako *Malformed Packet*.
 
 ## Diagnostyka
 

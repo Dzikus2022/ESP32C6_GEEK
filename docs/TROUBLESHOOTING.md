@@ -33,6 +33,12 @@ Tylko problemy już napotkane przy stawianiu projektu.
 **Było:** co 500 ms całe `fillScreen` + skan ustawia pełny redraw.  
 **Teraz:** pełne czyszczenie tylko przy zmianie ekranu/pozycji; liczby idą live.
 
+## Wireshark: File type is neither pcap nor pcapng
+
+**Objaw:** `magic = 0x00000128` (albo inna mała liczba), nie `0xa1b2c3d4`.  
+**Przyczyna:** czytelnik FIFO wszedł w środku sesji i dostał `ts_sec` rekordu zamiast nagłówka globalnego (stary mostek, drugi `dd`/Wireshark).  
+**Rozwiązanie:** jeden mostek, jeden Wireshark. Zrestartuj `geek_sniffer.py` — każdy nowy reader dostaje `d4 c3 b2 a1`. Sprawdź: `python3 tools/geek_sniffer.py --self-test`.
+
 ## Wireshark nie widzi 802.11
 
 Mostek musi iść na FIFO, nie na surowy `/dev/ttyACM0`. LCD: `USB LIVE`. Port nie może być zajęty przez monitor. Szczegóły: [WIRESHARK.md](WIRESHARK.md).
