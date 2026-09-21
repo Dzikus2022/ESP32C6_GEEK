@@ -1,47 +1,65 @@
-# ESP32C6_GEEK
+# ESP32-C6-GEEK Base Firmware
 
-**GEEK Radar v0.2.0** — dashboard radia + **WiFi Sniffer v0.1** (802.11 → USB → Wireshark) na **Waveshare ESP32-C6-GEEK**.
+Czysty punkt startowy dla **Waveshare ESP32-C6-GEEK**.
+
+Gałąź `base` trzyma potwierdzoną konfigurację płyty (PlatformIO, 16 MB flash, ST7789, BOOT) i minimalną aplikację testową. Nie zawiera Radaru, Sniffera, BLE ani mostka Wireshark.
 
 | | |
 |---|---|
-| Chip | ESP32-C6 QFN40 (rev 0.2) |
+| Płytka | Waveshare ESP32-C6-GEEK |
+| Chip | ESP32-C6 QFN40 |
 | Flash | 16 MB |
-| LCD | ST7789 240×135 |
-| Framework | Arduino 3.x (pioarduino) |
-| IDE / OS | Cursor + PlatformIO na Linux Mint |
+| LCD | ST7789 240×135, SPI_MODE3 |
+| Przycisk | BOOT GPIO9, active-low |
+| Framework | Arduino 3.x (pioarduino 54.03.20) |
 | USB | native USB-Serial/JTAG → `/dev/ttyACM0` |
+| Wersja | 0.1-base |
 
-Jeden przycisk BOOT, nawigacja hierarchiczna: krótki = dalej, długi = wejdź / otwórz, bardzo długi = wstecz.  
 Mapa pinów: [docs/HARDWARE.md](docs/HARDWARE.md). Architektura: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Ekrany
+## Co robi ten firmware
 
-1. Splash — GEEK RADAR, status SYSTEM / DISPLAY / RADIO
-2. SYSTEM — uptime, heap, liczby Wi‑Fi/BLE
-3. WIFI — podsumowanie sieci; Long → lista AP → szczegóły
-4. BLE — podsumowanie urządzeń; Long → lista urządzeń → szczegóły reklam
-5. WIFI SNIFFER — kanał 6, statystyki; Long → strumień binarny na USB
+Po starcie LCD pokazuje:
 
-Listy pokazują pozycję `n/total` i jedną wyróżnioną pozycję. Kolejność BLE jest zamrażana przy wejściu (sort RSSI raz); wybór trzyma adres, nie indeks.
+```
+ESP32-C6-GEEK
+BASE FIRMWARE
+SYSTEM     OK
+DISPLAY    OK
+BUTTON     READY
+v0.1-base
+```
 
-Skan AP/BLE jest bierny. Sniffer 802.11 też jest bierny (bez deautha). Mostek: [docs/WIRESHARK.md](docs/WIRESHARK.md).
+Potem ekran testu przycisku: krótki = licznik, długi = `LONG PRESS`, bardzo długi = `VERY LONG`. Dodatkowo chip, heap i uptime.
 
-**TF/SD nie jest używane.** Waveshare V1 i V2 mają inne okablowanie karty — omijamy konflikt.
+**Nie inicjuje Wi‑Fi, BLE, Zigbee, Thread ani MQTT.**
+
+**TF/SD nie jest używane.** V1 i V2 mają inne okablowanie karty.
+
+## Workflow gałęzi
+
+| Gałąź | Rola |
+|-------|------|
+| `main` | stabilne aplikacje (np. WiFi Sniffer) |
+| `base` | czysty fundament płyty — start eksperymentów |
+| `playground` | eksperymenty odgałęzione od `base` |
+
+Nowa praca: odgałęź od `base`, nie konfiguruj LCD/BOOT od zera.
 
 ## Repozytorium
 
 ```
 src/main.cpp          # setup / loop
-src/core/             # App, stan, nawigacja, log
+src/core/             # App, stan, log
 src/config/           # piny i stałe
-src/display/          # LCD + ekrany
+src/display/          # LCD + ekrany bazy
 src/input/            # przycisk BOOT
-src/services/         # system, Wi-Fi scan/sniff, BLE
-tools/                # mostek Wireshark
+src/services/         # snapshot systemu
 docs/
+.cursor/rules/        # stałe reguły projektu
 ```
 
-## Budowa i Serial
+## Budowa
 
 ```bash
 pio run                 # budowa (nie kasuje flasha)
@@ -50,17 +68,15 @@ pio device monitor      # 115200
 ```
 
 Nie uruchamiaj `pio run -t erase` ani `esptool erase-flash`.
-Szczegóły: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 
 ## Dokumentacja
 
 | Plik | Treść |
 |------|--------|
-| [docs/WIRESHARK.md](docs/WIRESHARK.md) | Sniffer USB, FIFO, protokół GKW1 |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Moduły, stan, nawigacja |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Moduły, stan, ekrany bazy |
 | [docs/HARDWARE.md](docs/HARDWARE.md) | LCD, BOOT, V1/V2 SD |
-| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | Timing, pojemności, lib_deps |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Narzędzia, Git |
+| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | Timing, kolory, lib_deps |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Narzędzia, Git, gałęzie |
 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | dialout, CDC, LCD, przycisk |
 | [docs/CHANGELOG.md](docs/CHANGELOG.md) | Istotne zmiany |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Decyzje inżynierskie |

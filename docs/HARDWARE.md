@@ -42,7 +42,7 @@ Native panel w `LCD_Driver.h`: 135×240. Firmware: `init(135, 240, SPI_MODE3)`, 
 
 Firmware: `INPUT_PULLUP`. Gestami steruje `ButtonManager` (Short / Long / VeryLong / Repeat) — piny i timing w [CONFIGURATION.md](CONFIGURATION.md). Przy resetcie przytrzymany BOOT to tryb programowania (strapping) — to sprzęt, nie bug.
 
-## TF / SD — nie używać w v0.1
+## TF / SD — nie używać w bazie
 
 V2 (2026) zmienia okablowanie TF. Przykład wiki (jedna z rewizji) pokazuje m.in. CS 23 / MOSI 18 / MISO 20 / SCK 19 — **nie traktować jako uniwersalne**. Brak SD w firmware, żeby nie zepsuć V1 albo V2.
 
